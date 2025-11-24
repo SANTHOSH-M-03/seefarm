@@ -1,0 +1,52 @@
+{
+  "rules": {
+    "products": {
+      ".read": true,
+      ".write": "auth !== null && root.child('admins').child(auth.uid).exists()",
+      ".indexOn": ["category", "featured", "updatedAt", "createdAt"],
+      "$productId": {
+        ".read": true,
+        ".write": "auth !== null && root.child('admins').child(auth.uid).exists()",
+        ".validate": "newData.hasChildren(['title', 'price', 'desc', 'category', 'imageUrl'])"
+      }
+    },
+    "admins": {
+      ".read": "root.child('admins').child(auth.uid).exists()",
+      ".write": "auth !== null && root.child('admins').child(auth.uid).exists()",
+      "$uid": {
+        ".read": "auth.uid === $uid",
+        ".write": "auth.uid === $uid && auth.token.email === 'mrseafarm@gmail.com'",
+        ".validate": "newData.hasChildren(['email', 'role'])"
+      }
+    },
+    "carts": {
+      ".read": "auth !== null",
+      ".write": "auth !== null",
+      "$uid": {
+        ".read": "auth.uid === $uid",
+        ".write": "auth.uid === $uid",
+        ".indexOn": ["createdAt", "updatedAt"],
+        "items": {
+          "$itemId": {
+            ".read": "auth.uid === $uid",
+            ".write": "auth.uid === $uid",
+            ".validate": "newData.hasChildren(['id', 'title', 'price', 'quantity'])"
+          }
+        },
+        "metadata": {
+          ".read": "auth.uid === $uid",
+          ".write": "auth.uid === $uid"
+        }
+      }
+    },
+    "orders": {
+      ".read": "auth !== null",
+      ".write": "auth !== null",
+      "$orderId": {
+        ".read": "root.child('orders').child($orderId).child('userId').val() === auth.uid || root.child('admins').child(auth.uid).exists()",
+        ".write": "root.child('orders').child($orderId).child('userId').val() === auth.uid || root.child('admins').child(auth.uid).exists()",
+        ".validate": "newData.hasChildren(['userId', 'items', 'total', 'createdAt'])"
+      }
+    }
+  }
+}
